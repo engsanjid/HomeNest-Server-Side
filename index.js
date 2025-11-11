@@ -33,7 +33,18 @@ app.get("/all-properties", async (req, res) => {
   res.send(data);
 });
 
-
+//POST Method
+//insertOne
+//insertMany
+app.post("/all-properties",async(req,res)=>{
+  const data1=req.body
+  console.log(data1)
+  const result=await properties.insertOne(data1)
+  res.send({
+    success:true,
+    result
+  })
+})
 
 
 
