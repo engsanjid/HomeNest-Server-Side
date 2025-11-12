@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB URI
-const uri = process.env.MONGO_URI 
+const uri = process.env.MONGO_URI; 
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -24,7 +24,7 @@ async function run() {
   try {
     
     await client.connect();
-     const db = client.db("HomeNestBD");
+    const db = client.db("HomeNestBD");
   const properties = db.collection("properties");
 //find
 //findOne
