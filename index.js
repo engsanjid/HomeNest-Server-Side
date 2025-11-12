@@ -57,6 +57,35 @@ app.post("/all-properties",async(req,res)=>{
 
 
 
+// My Properties - get by user email
+app.get("/my-properties/:email", async (req, res) => {
+  const { email } = req.params;
+  const data = await properties.find({ postedBy: email }).toArray();
+  res.send(data);
+});
+
+// Delete Property
+app.delete("/property/:id", async (req, res) => {
+  const { id } = req.params;
+  const result = await properties.deleteOne({ _id: new ObjectId(id) });
+  res.send({ success: true, result });
+});
+
+// Update property
+app.put("/property/:id", async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body;
+  const result = await properties.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: updateData }
+  );
+
+  res.send({
+    success: result.modifiedCount > 0,
+  });
+});
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
