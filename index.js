@@ -29,10 +29,30 @@ async function run() {
   const properties = db.collection("properties");
 //find
 //findOne
-app.get("/all-properties",verifyTokenMiddleware, async (req, res) => {
-  const data = await properties.find().toArray();
-  res.send(data);
+app.get("/all-properties", async (req, res) => {
+  try {
+    const { search, sort } = req.query;
+
+    const filter = {};
+    if (search) {
+      filter.propertyName = { $regex: search, $options: "i" }; 
+    }
+
+    let sortOption = {};
+    if (sort === "price_asc") sortOption = { price: 1 };
+    else if (sort === "price_desc") sortOption = { price: -1 };
+    else if (sort === "date_asc") sortOption = { createdAt: 1 };
+    else if (sort === "date_desc") sortOption = { createdAt: -1 };
+    else sortOption = { createdAt: -1 };
+
+    const data = await properties.find(filter).sort(sortOption).toArray();
+    res.send(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ success: false, message: "Server error" });
+  }
 });
+
 app.get("/details/:id", async (req, res) => {
   const {id} = req.params;
   const result=await properties.findOne({_id:new ObjectId(id)})
@@ -46,9 +66,10 @@ app.get("/details/:id", async (req, res) => {
 //POST Method
 //insertOne
 //insertMany
-app.post("/all-properties",async(req,res)=>{
+app.post("/all-properties",verifyTokenMiddleware,async(req,res)=>{
   const data1=req.body
   console.log(data1)
+    data1.createdAt = new Date();
   const result=await properties.insertOne(data1)
   res.send({
     success:true,
@@ -88,7 +109,7 @@ app.put("/property/:id",verifyTokenMiddleware, async (req, res) => {
 
 
 
-app.post("/reviews", async (req, res) => {
+app.post("/reviews",verifyTokenMiddleware, async (req, res) => {
   const review = req.body;
   review.propertyId = review.propertyId.toString(); 
   const result = await db.collection("reviews").insertOne(review);
@@ -106,7 +127,7 @@ app.get("/reviews/:propertyId", async (req, res) => {
 });
 
 
-app.get("/my-reviews/:email", async (req, res) => {
+app.get("/my-reviews/:email",verifyTokenMiddleware, async (req, res) => {
   const { email } = req.params;
   const reviews = await db
     .collection("reviews")
@@ -115,6 +136,24 @@ app.get("/my-reviews/:email", async (req, res) => {
     .toArray();
   res.send(reviews);
 });
+
+
+app.get("/featured-properties", async (req, res) => {
+  try {
+    const data = await db
+      .collection("properties")
+      .find()
+         .sort({ _id: -1 })  
+      .limit(6)
+      .toArray();
+
+    res.send(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ success: false, message: "Server error" });
+  }
+});
+
 
 
     await client.db("admin").command({ ping: 1 });
@@ -134,7 +173,7 @@ run().catch(console.dir);
 
 
 //  Routes
-app.get("/", (req, res) => res.send("🏡 HomeNest API running"));
+app.get("/", (req, res) => res.send(" HomeNest API running"));
 
 
 

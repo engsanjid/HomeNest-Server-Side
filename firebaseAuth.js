@@ -1,7 +1,4 @@
-
 const admin = require("firebase-admin");
-
-
 const serviceAccount = require("./serviceAccountKey.json");
 
 if (!admin.apps.length) {
@@ -18,7 +15,7 @@ async function verifyTokenMiddleware(req, res, next) {
   const idToken = match[1];
   try {
     const decoded = await admin.auth().verifyIdToken(idToken);
-    req.user = decoded; 
+    req.user = decoded;
     next();
   } catch (err) {
     console.error("Token verify failed:", err);
